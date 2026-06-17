@@ -1,5 +1,11 @@
 **简体中文 | [English](./README_en-us.md)**
 
+> 这是 `MusicPlayer2-TaskbarLyric` 个人修改版源码仓库，用于保存任务栏歌词 IPC 等源码改动，并方便后续同步上游。
+>
+> 普通下载和安装请前往整合发布仓库：`https://github.com/ImKani/MusicPlayer2TaskbarLyric`
+>
+> 本仓库不作为普通用户的主要下载入口。若分发修改版 `MusicPlayer2.exe`，请同时提供本仓库对应源码或 release/tag 链接。
+
 <a href="https://hellogithub.com/repository/zhongyang219/MusicPlayer2" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=1ad354e5ab404301919665ac7973cd07&claim_uid=CeVqou2T1dIvfQP&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 # MusicPlayer2 简介
