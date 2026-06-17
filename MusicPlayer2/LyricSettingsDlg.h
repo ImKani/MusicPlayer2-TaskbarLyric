@@ -69,6 +69,7 @@ protected:
 
     CSpinEdit m_lyric_line_space_edit;
     CMyComboBox m_lyric_alignment_combo;
+    CMyComboBox m_parallel_lyric_line_combo;
 
     CToolTipCtrl m_tool_tip;
     bool m_search_box_font_changed{ false };
@@ -139,6 +140,7 @@ public:
     afx_msg void OnBnClickedSearchBoxTransparentInWhiteMode();
     afx_msg void OnBnClickedSetFontButton();
     afx_msg void OnCbnSelchangeAlignmentCombo2();
+    afx_msg void OnCbnSelchangeParallelLyricLineCombo();
     afx_msg void OnCbnSelchangeDesktopLyricAlignmentCombo();
     afx_msg void OnBnClickedShowLyricTranslateCheck();
     afx_msg void OnBnClickedLyricHideBlankLineCheck();

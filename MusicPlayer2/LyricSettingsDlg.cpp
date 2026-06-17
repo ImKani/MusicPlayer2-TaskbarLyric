@@ -46,6 +46,8 @@ bool CLyricSettingsDlg::InitializeControls()
     SetDlgItemTextW(IDC_KARAOKE_DISP, temp.c_str());
     temp = theApp.m_str_table.LoadText(L"TXT_OPT_LRC_USE_MUSIC_SYMBOL");
     SetDlgItemTextW(IDC_LYRIC_HIDE_BLANK_LINE_CHECK, temp.c_str());
+    temp = theApp.m_str_table.LoadText(L"TXT_OPT_LRC_PARALLEL_LINE");
+    SetDlgItemTextW(IDC_TXT_OPT_LRC_PARALLEL_LINE_STATIC, temp.c_str());
 
     temp = theApp.m_str_table.LoadText(L"TXT_OPT_LRC_WINDOW_LRC");
     SetDlgItemTextW(IDC_TXT_OPT_LRC_WINDOW_LRC_STATIC, temp.c_str());
@@ -165,6 +167,7 @@ void CLyricSettingsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_SHOW_DEFAULT_ALBUM_ICON_CHK, m_show_default_album_icon_chk);
     DDX_Control(pDX, IDC_FONT_SIZE_EDIT2, m_lyric_line_space_edit);
     DDX_Control(pDX, IDC_ALIGNMENT_COMBO2, m_lyric_alignment_combo);
+    DDX_Control(pDX, IDC_PARALLEL_LYRIC_LINE_COMBO, m_parallel_lyric_line_combo);
     DDX_Control(pDX, IDC_DESKTOP_LYRIC_ALIGNMENT_COMBO, m_desktop_lyric_alignment_combo);
 }
 
@@ -211,6 +214,7 @@ BEGIN_MESSAGE_MAP(CLyricSettingsDlg, CTabDlg)
     ON_BN_CLICKED(IDC_SEARCH_BOX_TRANSPARENT_IN_WHITE_MODE, &CLyricSettingsDlg::OnBnClickedSearchBoxTransparentInWhiteMode)
     ON_BN_CLICKED(IDC_SET_FONT_BUTTON, &CLyricSettingsDlg::OnBnClickedSetFontButton)
     ON_CBN_SELCHANGE(IDC_ALIGNMENT_COMBO2, &CLyricSettingsDlg::OnCbnSelchangeAlignmentCombo2)
+    ON_CBN_SELCHANGE(IDC_PARALLEL_LYRIC_LINE_COMBO, &CLyricSettingsDlg::OnCbnSelchangeParallelLyricLineCombo)
     ON_CBN_SELCHANGE(IDC_DESKTOP_LYRIC_ALIGNMENT_COMBO, &CLyricSettingsDlg::OnCbnSelchangeDesktopLyricAlignmentCombo)
     ON_BN_CLICKED(IDC_SHOW_LYRIC_TRANSLATE_CHECK, &CLyricSettingsDlg::OnBnClickedShowLyricTranslateCheck)
     ON_BN_CLICKED(IDC_LYRIC_HIDE_BLANK_LINE_CHECK, &CLyricSettingsDlg::OnBnClickedLyricHideBlankLineCheck)
@@ -238,6 +242,14 @@ BOOL CLyricSettingsDlg::OnInitDialog()
     CheckDlgButton(IDC_SHOW_LYRIC_TRANSLATE_CHECK, m_data.show_translate);
     CheckDlgButton(IDC_LYRIC_HIDE_BLANK_LINE_CHECK, m_data.donot_show_blank_lines);
     CheckDlgButton(IDC_SHOW_SONG_INFO_IF_LYRIC_NOT_EXIST_CHECK, m_data.show_song_info_if_lyric_not_exist);
+    m_parallel_lyric_line_combo.AddString(theApp.m_str_table.LoadText(L"TXT_OPT_LRC_PARALLEL_LINE_LAST").c_str());
+    m_parallel_lyric_line_combo.AddString(theApp.m_str_table.LoadText(L"TXT_OPT_LRC_PARALLEL_LINE_2").c_str());
+    m_parallel_lyric_line_combo.AddString(theApp.m_str_table.LoadText(L"TXT_OPT_LRC_PARALLEL_LINE_3").c_str());
+    m_parallel_lyric_line_combo.AddString(theApp.m_str_table.LoadText(L"TXT_OPT_LRC_PARALLEL_LINE_4").c_str());
+    if (m_data.parallel_lyric_line <= 0)
+        m_parallel_lyric_line_combo.SetCurSel(0);
+    else
+        m_parallel_lyric_line_combo.SetCurSel(min(m_data.parallel_lyric_line, 3));
 
     m_lyric_line_space_edit.SetRange(MIM_LINE_SPACE, MAX_LINE_SPACE);
     m_lyric_line_space_edit.SetValue(m_data.lyric_line_space);
@@ -350,6 +362,7 @@ BOOL CLyricSettingsDlg::OnInitDialog()
     m_alignment_combo.SetMouseWheelEnable(false);
     m_desktop_lyric_opacity_sld.SetMouseWheelEnable(false);
     m_lyric_alignment_combo.SetMouseWheelEnable(false);
+    m_parallel_lyric_line_combo.SetMouseWheelEnable(false);
     m_lyric_line_space_edit.SetMouseWheelEnable(false);
     m_desktop_lyric_alignment_combo.SetMouseWheelEnable(false);
 
@@ -873,6 +886,12 @@ void CLyricSettingsDlg::OnCbnSelchangeAlignmentCombo2()
 {
     // TODO: 在此添加控件通知处理程序代码
     m_data.lyric_align = static_cast<Alignment>(m_lyric_alignment_combo.GetCurSel());
+}
+
+void CLyricSettingsDlg::OnCbnSelchangeParallelLyricLineCombo()
+{
+    int cur_sel{ m_parallel_lyric_line_combo.GetCurSel() };
+    m_data.parallel_lyric_line = (cur_sel <= 0 ? -1 : cur_sel);
 }
 
 

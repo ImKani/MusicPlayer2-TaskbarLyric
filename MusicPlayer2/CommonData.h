@@ -191,6 +191,7 @@ struct LyricSettingData
     wstring AbsoluteLyricPath() const;          //获取歌词文件夹的绝对路径
     bool use_inner_lyric_first{};               //优先使用内嵌歌词
     bool show_translate{ true };                //歌词是否显示翻译
+    int parallel_lyric_line{ -1 };              //同时间戳并列歌词显示行，-1表示最后一行，1表示第2行
     bool donot_show_blank_lines{};              //单行和双行显示模式下不显示空白行
     bool show_song_info_if_lyric_not_exist{};   //是否在没有歌词时显示歌曲信息
 

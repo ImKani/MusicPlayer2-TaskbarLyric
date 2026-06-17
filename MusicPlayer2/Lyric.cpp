@@ -217,6 +217,7 @@ void CLyrics::DisposeLrc()
                 if (index != wstring::npos)                     // 如果找到了‘ / ’，说明该句歌词包含翻译
                 {
                     lyric.translate = text_str.substr(index + 3);
+                    lyric.parallel_lines.push_back(lyric.translate);
                     text_str = text_str.substr(0, index);
                     m_translate = true; // 由于前面的StringNormalize操作，不可能出现“ / "后面为空的情况，无须重新判断翻译是否为空
                 }
@@ -767,7 +768,15 @@ wstring CLyrics::GetAllLyricText(bool with_translate) const
     {
         all_lyric += a_lyric.text;
         all_lyric += L"\r\n";
-        if(with_translate && !a_lyric.translate.empty())
+        if (with_translate && !a_lyric.parallel_lines.empty())
+        {
+            for (const auto& line : a_lyric.parallel_lines)
+            {
+                all_lyric += line;
+                all_lyric += L"\r\n";
+            }
+        }
+        else if(with_translate && !a_lyric.translate.empty())
         {
             all_lyric += a_lyric.translate;
             all_lyric += L"\r\n";
@@ -832,7 +841,25 @@ wstring CLyrics::GetLyricsString2(bool lyric_and_traslation_in_same_line, LyricT
             {
                 line_str += a_lyric.text;
             }
-            if (!a_lyric.translate.empty())
+            const vector<wstring>& parallel_lines{ a_lyric.parallel_lines };
+            if (!parallel_lines.empty())
+            {
+                if (lyric_and_traslation_in_same_line && parallel_lines.size() == 1)
+                {
+                    line_str += L" / ";
+                    line_str += parallel_lines.front();
+                }
+                else
+                {
+                    for (const auto& line : parallel_lines)
+                    {
+                        line_str += L"\r\n";
+                        line_str += CPlayTime(a_lyric.time_start).toLyricTimeTag();
+                        line_str += line;
+                    }
+                }
+            }
+            else if (!a_lyric.translate.empty())
             {
                 //歌词和翻译在同一行，在" / "后面添加翻译
                 if (lyric_and_traslation_in_same_line)
@@ -951,18 +978,63 @@ void CLyrics::SaveLyric2(bool lyric_and_traslation_in_same_line)
     m_modified = false;
 }
 
+static void AppendParallelLine(vector<wstring>& lines, const wstring& text)
+{
+    if (text.empty())
+        return;
+    lines.push_back(text);
+}
+
+wstring CLyrics::SelectParallelLine(const Lyric& lyric, int line_index)
+{
+    if (lyric.parallel_lines.empty())
+        return {};
+
+    int selected{};
+    if (line_index <= 0)
+        selected = static_cast<int>(lyric.parallel_lines.size()) - 1;
+    else
+        selected = line_index - 1; // 1 means line2, 2 means line3...
+
+    selected = max(0, min(selected, static_cast<int>(lyric.parallel_lines.size()) - 1));
+    return lyric.parallel_lines[selected];
+}
+
+void CLyrics::RefreshSelectedParallelLines()
+{
+    m_translate = false;
+    for (auto& lyric : m_lyrics)
+    {
+        if (lyric.parallel_lines.empty() && !lyric.translate.empty())
+            lyric.parallel_lines.push_back(lyric.translate);
+
+        lyric.translate = SelectParallelLine(lyric, theApp.m_lyric_setting_data.parallel_lyric_line);
+        if (!lyric.parallel_lines.empty())
+            m_translate = true;
+    }
+}
+
 void CLyrics::CombineSameTimeLyric(int error)
 {
     std::stable_sort(m_lyrics.begin(), m_lyrics.end());
-    for (int i{}; i < static_cast<int>(m_lyrics.size() - 1); i++)
+    for (int i{}; i < static_cast<int>(m_lyrics.size() - 1);)
     {
         if (m_lyrics[i + 1].time_start_raw - m_lyrics[i].time_start_raw <= error)   // 找到相同时间标签的歌词
         {
-            m_lyrics[i].translate = m_lyrics[i + 1].text;
+            AppendParallelLine(m_lyrics[i].parallel_lines, m_lyrics[i + 1].text);
+            for (const auto& line : m_lyrics[i + 1].parallel_lines)
+                AppendParallelLine(m_lyrics[i].parallel_lines, line);
+            if (m_lyrics[i + 1].parallel_lines.empty())
+                AppendParallelLine(m_lyrics[i].parallel_lines, m_lyrics[i + 1].translate);
             m_lyrics.erase(m_lyrics.begin() + i + 1);   // 删除后面一句歌词
             m_text_and_translatein_in_same_line = false;
         }
+        else
+        {
+            i++;
+        }
     }
+    RefreshSelectedParallelLines();
 }
 
 void CLyrics::DeleteRedundantLyric()
@@ -982,7 +1054,11 @@ void CLyrics::SwapTextAndTranslation()
     for (auto& lyric : m_lyrics)
     {
         std::swap(lyric.text, lyric.translate);
+        lyric.parallel_lines.clear();
+        if (!lyric.translate.empty())
+            lyric.parallel_lines.push_back(lyric.translate);
     }
+    RefreshSelectedParallelLines();
 }
 
 void CLyrics::TimeTagForward()
@@ -1025,9 +1101,10 @@ void CLyrics::ExtractTranslationFromBrackets()
 {
     // 若对已有翻译的歌词使用则放弃原翻译
     m_translate = false;
-    for (Lyric lyric : m_lyrics)
+    for (Lyric& lyric : m_lyrics)
     {
         wstring temp = lyric.text;
+        lyric.parallel_lines.clear();
         // 按带括号的翻译格式解析
         if (   ParseLyricTextWithBracket(temp, lyric.text, lyric.translate, L'【', L'】')//【】
             || ParseLyricTextWithBracket(temp, lyric.text, lyric.translate, L'〖', L'〗')//〖〗
@@ -1035,6 +1112,7 @@ void CLyrics::ExtractTranslationFromBrackets()
             || ParseLyricTextWithBracket(temp, lyric.text, lyric.translate, L'『', L'』')//『』
             )
         {
+            lyric.parallel_lines.push_back(lyric.translate);
             m_translate = true;
         }
         else
@@ -1043,6 +1121,7 @@ void CLyrics::ExtractTranslationFromBrackets()
             lyric.translate.clear();
         }
     }
+    RefreshSelectedParallelLines();
 }
 
 void CLyrics::AdjustLyric(int offset)
@@ -1059,10 +1138,23 @@ void CLyrics::ChineseConvertion(bool simplified)
     {
         if (m_translate)               // 如果当前歌词有翻译，则只对全部翻译文本转换
         {
-            if (simplified)
-                lyric.translate = CCommon::TranslateToSimplifiedChinese(lyric.translate);
+            if (!lyric.parallel_lines.empty())
+            {
+                for (auto& line : lyric.parallel_lines)
+                {
+                    if (simplified)
+                        line = CCommon::TranslateToSimplifiedChinese(line);
+                    else
+                        line = CCommon::TranslateToTranditionalChinese(line);
+                }
+            }
             else
-                lyric.translate = CCommon::TranslateToTranditionalChinese(lyric.translate);
+            {
+                if (simplified)
+                    lyric.translate = CCommon::TranslateToSimplifiedChinese(lyric.translate);
+                else
+                    lyric.translate = CCommon::TranslateToTranditionalChinese(lyric.translate);
+            }
         }
         else
         {
@@ -1072,5 +1164,7 @@ void CLyrics::ChineseConvertion(bool simplified)
                 lyric.text = CCommon::TranslateToTranditionalChinese(lyric.text);
         }
     }
+    if (m_translate)
+        RefreshSelectedParallelLines();
     m_modified = true;
 }

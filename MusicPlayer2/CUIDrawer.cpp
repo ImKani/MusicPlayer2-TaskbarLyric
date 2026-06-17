@@ -3,6 +3,27 @@
 #include "MusicPlayer2.h"
 #include "Player.h"
 #include "SongInfoHelper.h"
+#include "Mp2LyricIpc.h"
+
+namespace
+{
+    void PublishTaskbarLyricState(const std::wstring& current_lyric, const std::wstring& current_translate,
+        const std::vector<std::wstring>& current_parallel_lines, const std::wstring& next_lyric,
+        const std::wstring& next_translate, const std::vector<std::wstring>& next_parallel_lines,
+        int progress, bool has_lyric)
+    {
+        CPlayer& player{ CPlayer::GetInstance() };
+        const SongInfo& song{ player.GetSafeCurrentSongInfo() };
+        CMp2LyricIpc::Instance().Publish(song.GetTitle(), song.GetArtist(), current_lyric, current_translate,
+            current_parallel_lines, next_lyric, next_translate, next_parallel_lines, progress, player.IsPlaying(), has_lyric);
+    }
+
+    void PublishTaskbarLyricState(const std::wstring& current_lyric, const std::wstring& current_translate,
+        const std::wstring& next_lyric, const std::wstring& next_translate, int progress, bool has_lyric)
+    {
+        PublishTaskbarLyricState(current_lyric, current_translate, {}, next_lyric, next_translate, {}, progress, has_lyric);
+    }
+}
 
 CUIDrawer::CUIDrawer(UIColors& colors)
     : m_colors(colors)
@@ -89,6 +110,7 @@ void CUIDrawer::DrawLyricTextMultiLine(CRect lyric_area, Alignment align, bool s
     else if (CPlayerUIHelper::IsMidiLyric())
     {
         wstring current_lyric{ CPlayer::GetInstance().GetMidiLyric() };
+        PublishTaskbarLyricState(current_lyric, L"", L"", L"", 0, !current_lyric.empty());
         DrawWindowText(lyric_area, current_lyric.c_str(), m_colors.color_text, Alignment::CENTER, false, true);
     }
     else if (CPlayer::GetInstance().m_Lyrics.IsEmpty())
@@ -102,6 +124,7 @@ void CUIDrawer::DrawLyricTextMultiLine(CRect lyric_area, Alignment align, bool s
             if (artist.empty())
                 artist = cur_song.GetArtist();
             song_info_str.Format(_T("%s - %s\r\n%s"), artist.c_str(), cur_song.GetAlbum().c_str(), cur_song.GetTitle().c_str());
+            PublishTaskbarLyricState(song_info_str.GetString(), L"", L"", L"", 0, false);
             DrawWindowText(lyric_area, song_info_str, m_colors.color_text, align, false, true);
         }
         //显示“当前歌曲没有歌词”
@@ -132,6 +155,20 @@ void CUIDrawer::DrawLyricTextMultiLine(CRect lyric_area, Alignment align, bool s
         CPlayTime time{ CPlayer::GetInstance().GetCurrentPosition() };		//当前播放时间
         int lyric_index = CPlayer::GetInstance().m_Lyrics.GetLyricIndex(time);		            // 当前歌词的序号
         int progress{ CPlayer::GetInstance().m_Lyrics.GetLyricProgress(time, false, false, [this](const wstring& str) { return GetTextExtent(str.c_str()).cx; }) };		// 当前歌词进度（范围为0~1000），多行歌词使用的进度不含进度符号
+        CLyrics::Lyric taskbar_lyric{ CPlayer::GetInstance().m_Lyrics.GetLyric(lyric_index) };
+        CLyrics::Lyric taskbar_next_lyric{ CPlayer::GetInstance().m_Lyrics.GetLyric(lyric_index + 1) };
+        if (!theApp.m_lyric_setting_data.show_translate)
+        {
+            taskbar_lyric.parallel_lines.clear();
+            taskbar_next_lyric.parallel_lines.clear();
+        }
+        PublishTaskbarLyricState(taskbar_lyric.text,
+            theApp.m_lyric_setting_data.show_translate ? taskbar_lyric.translate : L"",
+            taskbar_lyric.parallel_lines,
+            taskbar_next_lyric.text,
+            theApp.m_lyric_setting_data.show_translate ? taskbar_next_lyric.translate : L"",
+            taskbar_next_lyric.parallel_lines,
+            progress, lyric_index >= 0 && !taskbar_lyric.text.empty());
         int y_progress;			//当前歌词在y轴上的进度
         if (!CPlayer::GetInstance().m_Lyrics.GetLyric(lyric_index).translate.empty() && theApp.m_lyric_setting_data.show_translate)
             y_progress = progress * lyric_height2 / 1000;
@@ -229,6 +266,7 @@ void CUIDrawer::DrawLyricTextSingleLine(CRect rect, int& flag, bool double_line,
     if (CPlayerUIHelper::IsMidiLyric())
     {
         wstring current_lyric{ CPlayer::GetInstance().GetMidiLyric() };
+        PublishTaskbarLyricState(current_lyric, L"", L"", L"", 0, !current_lyric.empty());
         DrawWindowText(rect, current_lyric.c_str(), m_colors.color_text, Alignment::CENTER, false, true);
     }
     else if (CPlayer::GetInstance().m_Lyrics.IsEmpty())
@@ -238,6 +276,7 @@ void CUIDrawer::DrawLyricTextSingleLine(CRect rect, int& flag, bool double_line,
         {
             const SongInfo& cur_song{ CPlayer::GetInstance().GetSafeCurrentSongInfo() };
             std::wstring song_info_str = CSongInfoHelper::GetDisplayStr(cur_song, DF_ARTIST_TITLE);
+            PublishTaskbarLyricState(song_info_str, L"", L"", L"", 0, false);
             static CDrawCommon::ScrollInfo lyric_scroll_info;
             DrawScrollText(rect, song_info_str.c_str(), m_colors.color_text, CPlayerUIHelper::GetScrollTextPixel(), theApp.m_lyric_setting_data.lyric_align != Alignment::LEFT, lyric_scroll_info);
         }
@@ -260,6 +299,7 @@ void CUIDrawer::DrawLyricTextSingleLine(CRect rect, int& flag, bool double_line,
         CPlayTime time{ CPlayer::GetInstance().GetCurrentPosition() };
         CLyrics::Lyric current_lyric{ now_lyrics.GetLyric(time, false, ignore_blank, karaoke) };
         int progress{ now_lyrics.GetLyricProgress(time, ignore_blank, karaoke, [this](const wstring& str) { return GetTextExtent(str.c_str()).cx; }) };
+        CLyrics::Lyric next_lyric{ now_lyrics.GetLyric(time, true, ignore_blank, karaoke) };
         
         //当前歌词为空，且持续了超过了20秒
         bool no_lyric = (current_lyric.text.empty() && CPlayer::GetInstance().GetCurrentPosition() - current_lyric.time_start > 20000) || progress >= 1000;
@@ -270,6 +310,7 @@ void CUIDrawer::DrawLyricTextSingleLine(CRect rect, int& flag, bool double_line,
             CString song_info_str;
             const SongInfo& cur_song{ CPlayer::GetInstance().GetSafeCurrentSongInfo() };
             song_info_str.Format(_T("%s - %s"), cur_song.GetArtist().c_str(), cur_song.GetTitle().c_str());
+            PublishTaskbarLyricState(song_info_str.GetString(), L"", L"", L"", 0, false);
             static CDrawCommon::ScrollInfo lyric_scroll_info;
             DrawScrollText(rect, song_info_str, m_colors.color_text, CPlayerUIHelper::GetScrollTextPixel(), theApp.m_lyric_setting_data.lyric_align != Alignment::LEFT, lyric_scroll_info);
         }
@@ -281,11 +322,25 @@ void CUIDrawer::DrawLyricTextSingleLine(CRect rect, int& flag, bool double_line,
 
             if (current_lyric.text.empty())
                 current_lyric.text = empty_lyric;
+            if (next_lyric.text.empty())
+                next_lyric.text = empty_lyric;
+            if (!theApp.m_lyric_setting_data.show_translate)
+            {
+                current_lyric.parallel_lines.clear();
+                next_lyric.parallel_lines.clear();
+            }
+            PublishTaskbarLyricState(current_lyric.text,
+                theApp.m_lyric_setting_data.show_translate ? current_lyric.translate : L"",
+                current_lyric.parallel_lines,
+                next_lyric.text,
+                theApp.m_lyric_setting_data.show_translate ? next_lyric.translate : L"",
+                next_lyric.parallel_lines,
+                progress, !no_lyric && !current_lyric.text.empty());
             //双行显示歌词
             if (double_line && (current_lyric.translate.empty() || !theApp.m_lyric_setting_data.show_translate) && rect.Height() > static_cast<int>(GetLyricTextHeight() * 1.73))
             {
                 wstring next_lyric_text;
-                next_lyric_text = now_lyrics.GetLyric(time, true, ignore_blank, karaoke).text;
+                next_lyric_text = next_lyric.text;
                 if (next_lyric_text.empty())
                     next_lyric_text = empty_lyric;
                 //这里实现文本从非高亮缓慢变化到高亮效果

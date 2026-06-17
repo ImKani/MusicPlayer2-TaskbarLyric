@@ -13,6 +13,7 @@ public:
         int time_span{};        // 行持续时间(偏移量即时应用)
         wstring text;           // 歌词的文本
         wstring translate;      // 歌词的翻译
+        vector<wstring> parallel_lines; // 同时间戳并列歌词，按出现顺序保存第2行、第3行...
         vector<int> split;      // 逐字歌词对text的分割位置
         vector<int> word_time;  // 分割后各字持续时间（毫秒），未经Normalize仅限GetLyricProgress使用，其他位置不应使用防止出现意料之外的行为
 
@@ -82,6 +83,9 @@ private:
     void DisposeWebVTT();
     // 将歌词中信息全部填入m_lyrics后或偏移量调整后调用，负责修正/填补信息
     void NormalizeLyric();
+    // 按设置从并列歌词行中选择一行写入translate，供原有显示逻辑兼容使用
+    void RefreshSelectedParallelLines();
+    static wstring SelectParallelLine(const Lyric& lyric, int line_index);
 
 public:
     CLyrics(const wstring& file_name, const LyricType& lyric_type = LyricType::LY_AUTO);

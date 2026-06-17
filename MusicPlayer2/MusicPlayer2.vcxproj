@@ -467,6 +467,7 @@
     <ClInclude Include="OggEncodeCfgDlg.h" />
     <ClInclude Include="PlayListCtrl.h" />
     <ClInclude Include="Lyric.h" />
+    <ClInclude Include="Mp2LyricIpc.h" />
     <ClInclude Include="MusicPlayer2.h" />
     <ClInclude Include="MusicPlayerDlg.h" />
     <ClInclude Include="OptionsDlg.h" />
@@ -715,6 +716,7 @@
     <ClCompile Include="OggEncodeCfgDlg.cpp" />
     <ClCompile Include="PlayListCtrl.cpp" />
     <ClCompile Include="Lyric.cpp" />
+    <ClCompile Include="Mp2LyricIpc.cpp" />
     <ClCompile Include="MusicPlayer2.cpp" />
     <ClCompile Include="MusicPlayerDlg.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />

@@ -537,6 +537,9 @@
     <ClInclude Include="Lyric.h">
       <Filter>功能逻辑类\Lyric</Filter>
     </ClInclude>
+    <ClInclude Include="Mp2LyricIpc.h">
+      <Filter>功能逻辑类</Filter>
+    </ClInclude>
     <ClInclude Include="MusicPlayer2.h">
       <Filter>MusicPlayer2</Filter>
     </ClInclude>
@@ -1267,6 +1270,9 @@
     </ClCompile>
     <ClCompile Include="Lyric.cpp">
       <Filter>功能逻辑类\Lyric</Filter>
+    </ClCompile>
+    <ClCompile Include="Mp2LyricIpc.cpp">
+      <Filter>功能逻辑类</Filter>
     </ClCompile>
     <ClCompile Include="MusicPlayer2.cpp">
       <Filter>MusicPlayer2</Filter>
