@@ -14,7 +14,13 @@ MusicPlayer2 is a powerful local music player software designed to provide users
 
 # Related Links
 
-Please [click here](https://github.com/zhongyang219/MusicPlayer2/releases)to download the latest version of MusicPlayer2.
+For the taskbar lyric build that works with the TrafficMonitor plugin, please download the integrated package from:
+
+https://github.com/ImKani/MusicPlayer2TaskbarLyric
+
+The integrated package contains the modified MusicPlayer2 build, the TrafficMonitor plugin, and the example configuration files.
+
+For the original upstream MusicPlayer2 release without the taskbar lyric integration, please [click here](https://github.com/zhongyang219/MusicPlayer2/releases).
 
 Alternate link: Download from [Baidu Netdisk](https://pan.baidu.com/s/1i5QNwFF)
 
