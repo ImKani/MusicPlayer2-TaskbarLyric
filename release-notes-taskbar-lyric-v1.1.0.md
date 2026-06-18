@@ -21,8 +21,6 @@ https://github.com/ImKani/MusicPlayer2TaskbarLyric
 - TrafficMonitor 歌词插件：`https://github.com/ImKani/TrafficMonitorPlugins-MusicPlayer2Lyric`
 - 整合发布仓库：`https://github.com/ImKani/MusicPlayer2TaskbarLyric`
 
-## 版权和说明
+## 许可和说明
 
-Copyright (C) 2026 by ImKani.
-
-本仓库基于 `zhongyang219/MusicPlayer2`。MusicPlayer2 上游项目使用 GPLv3。如果分发修改版 `MusicPlayer2.exe`，应同时提供对应源码。
+本仓库基于 `zhongyang219/MusicPlayer2`，保留上游项目的版权和许可声明。MusicPlayer2 上游项目使用 GPLv3。如果分发修改版 `MusicPlayer2.exe`，应同时提供对应源码。
