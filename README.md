@@ -5,6 +5,8 @@
 > 普通下载和安装请前往整合发布仓库：`https://github.com/ImKani/MusicPlayer2TaskbarLyric`
 >
 > 本仓库不作为普通用户的主要下载入口。若分发修改版 `MusicPlayer2.exe`，请同时提供本仓库对应源码或 release/tag 链接。
+>
+> 第三方适配任务栏歌词接口请参考：[MusicPlayer2 Taskbar Lyric IPC API](./TASKBAR_LYRIC_IPC_API.md)
 
 <a href="https://hellogithub.com/repository/zhongyang219/MusicPlayer2" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=1ad354e5ab404301919665ac7973cd07&claim_uid=CeVqou2T1dIvfQP&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 

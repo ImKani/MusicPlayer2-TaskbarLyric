@@ -5,6 +5,8 @@
 > For normal downloads and installation, please use the integration release repository: `https://github.com/ImKani/MusicPlayer2TaskbarLyric`
 >
 > This repository is not the primary download entry for end users. If you redistribute a modified `MusicPlayer2.exe`, provide the corresponding source code or a matching release/tag link from this repository.
+>
+> For third-party integrations, see: [MusicPlayer2 Taskbar Lyric IPC API](./TASKBAR_LYRIC_IPC_API.md)
 
 <a href="https://hellogithub.com/repository/zhongyang219/MusicPlayer2" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=1ad354e5ab404301919665ac7973cd07&claim_uid=CeVqou2T1dIvfQP&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
